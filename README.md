@@ -1,171 +1,124 @@
-# ArXiv MCP Server
+# arXiv MCP Server
 
-> 🔍 Enable AI assistants to search and access arXiv papers through a simple MCP interface.
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=arxiv&inputs=%5B%5D&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22arxiv-mcp-server%22%5D%7D) [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=arxiv&inputs=%5B%5D&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22arxiv-mcp-server%22%5D%7D&quality=insider)
 
-The ArXiv MCP Server provides a bridge between AI assistants and arXiv's research repository through the Model Context Protocol (MCP). It allows AI models to search for papers and access their content in a programmatic way.
+A Model Context Protocol server for searching and reading arXiv papers.
 
-## ✨ Core Features
+## Features
 
-- 🔎 **Paper Search**: Query arXiv papers with filters for date ranges and categories
-- 📄 **Paper Access**: Download and read paper content
-- 📋 **Paper Listing**: View all downloaded papers
-- 🗃️ **Local Storage**: Papers are saved locally for faster access
-- 📝 **Prompts**: A Set of Research Prompts
+- **search** - query arXiv with filters (date, category, sort)
+- **download** - fetch paper PDF, convert to markdown
+- **read** - access stored paper content
+- **list** - view all downloaded papers
+- **prompts** - deep paper analysis workflow
 
-## 🚀 Quick Start
+## Prerequisites
 
-### Prerequisites
+- Python 3.11+
 
-- Python 3.11 or higher
+## Installation
 
-### Local Setup
-
-1. **Navigate to project directory**:
 ```bash
-cd /Users/user/Desktop/arxiv-mcp-server-main
-```
-
-2. **Create virtual environment**:
-```bash
+git clone <repo-url>
+cd arxiv-mcp-server
 python3 -m venv .venv
-source .venv/bin/activate  # On macOS/Linux
-# or
-.venv\Scripts\activate  # On Windows
-```
-
-3. **Install dependencies**:
-```bash
-pip install --upgrade pip
+source .venv/bin/activate
 pip install -e .
 ```
 
-4. **Test the server** (optional):
-```bash
-python -m arxiv_mcp_server
-# Or run tests
-python -m pytest
-```
+## Configuration
 
-**Note**: The server runs via stdio and waits for MCP client connections. Press Ctrl+C to stop when testing manually.
+### Claude Desktop
 
-### 🔌 MCP Client Configuration
-
-#### For Claude Desktop
-
-Add this to your Claude Desktop MCP config file:
-
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
-    "mcpServers": {
-        "arxiv-mcp-server": {
-            "command": "/Users/user/Desktop/arxiv-mcp-server-main/.venv/bin/python",
-            "args": [
-                "-m",
-                "arxiv_mcp_server",
-                "--storage-path",
-                "/Users/user/Desktop/arxiv-mcp-server-main/papers"
-            ]
-        }
+  "mcpServers": {
+    "arxiv": {
+      "command": "/path/to/.venv/bin/python",
+      "args": ["-m", "arxiv_mcp_server", "--storage-path", "/path/to/papers"]
     }
+  }
 }
 ```
 
-**Note**: Update the paths to match your actual project location. Use the full path to the Python interpreter in your `.venv` directory.
+### Cursor
 
-#### Using environment variable for storage path
-
-You can also set the storage path via environment variable:
+Add to MCP settings:
 
 ```json
 {
-    "mcpServers": {
-        "arxiv-mcp-server": {
-            "command": "python",
-            "args": ["-m", "arxiv_mcp_server"],
-            "env": {
-                "PYTHONPATH": "/Users/user/Desktop/arxiv-mcp-server-main/src",
-                "ARXIV_STORAGE_PATH": "/Users/user/Desktop/arxiv-mcp-server-main/papers"
-            }
-        }
+  "mcpServers": {
+    "arxiv": {
+      "command": "python",
+      "args": ["-m", "arxiv_mcp_server"],
+      "env": {
+        "PYTHONPATH": "/path/to/arxiv-mcp-server/src"
+      }
     }
+  }
 }
 ```
 
-**Default storage location**: If not specified, papers are stored at `~/.arxiv-mcp-server/papers`
+Default storage: `~/.arxiv-mcp-server/papers`
 
-## 💡 Available Tools
+## Tools
 
-The server provides four main tools:
+### search_papers
 
-### 1. Paper Search
-Search for papers with optional filters:
-
-```python
-result = await call_tool("search_papers", {
-    "query": "transformer architecture",
-    "max_results": 10,
-    "date_from": "2023-01-01",
-    "categories": ["cs.AI", "cs.LG"]
-})
+```json
+{
+  "query": "transformer architecture",
+  "max_results": 10,
+  "date_from": "2023-01-01",
+  "categories": ["cs.AI", "cs.LG"],
+  "sort_by": "relevance"
+}
 ```
 
-### 2. Paper Download
-Download a paper by its arXiv ID:
+### download_paper
 
-```python
-result = await call_tool("download_paper", {
-    "paper_id": "2401.12345"
-})
+```json
+{
+  "paper_id": "2401.12345"
+}
 ```
 
-### 3. List Papers
-View all downloaded papers:
+### list_papers
 
-```python
-result = await call_tool("list_papers", {})
+```json
+{}
 ```
 
-### 4. Read Paper
-Access the content of a downloaded paper:
+### read_paper
 
-```python
-result = await call_tool("read_paper", {
-    "paper_id": "2401.12345"
-})
+```json
+{
+  "paper_id": "2401.12345"
+}
 ```
 
-## 📝 Research Prompts
+## Prompts
 
-The server offers specialized prompts to help analyze academic papers:
+### deep-paper-analysis
 
-### Paper Analysis Prompt
-A comprehensive workflow for analyzing academic papers that only requires a paper ID:
+Comprehensive paper analysis workflow:
 
-```python
-result = await call_prompt("deep-paper-analysis", {
-    "paper_id": "2401.12345"
-})
+```json
+{
+  "paper_id": "2401.12345"
+}
 ```
 
-This prompt includes:
-- Detailed instructions for using available tools (list_papers, download_paper, read_paper, search_papers)
-- A systematic workflow for paper analysis
-- Comprehensive analysis structure covering:
-  - Executive summary
-  - Research context
-  - Methodology analysis
-  - Results evaluation
-  - Practical and theoretical implications
-  - Future research directions
-  - Broader impacts
+Covers: executive summary, methodology, results, implications, future directions.
 
-## ⚙️ Configuration
+## Environment variables
 
-Configure through environment variables:
+| Variable | Default |
+|----------|---------|
+| `ARXIV_STORAGE_PATH` | `~/.arxiv-mcp-server/papers` |
 
-| Variable | Purpose | Default |
-|----------|---------|---------|
-| `ARXIV_STORAGE_PATH` | Paper storage location | ~/.arxiv-mcp-server/papers |
+## License
+
+MIT
