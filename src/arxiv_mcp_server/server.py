@@ -27,6 +27,12 @@ server = Server(settings.APP_NAME)
 # Initialize OpenTelemetry tracing (no-op if SDK not installed)
 setup_tracing()
 
+# Wrap tool handlers with OTel tracing spans
+_traced_search = trace_tool("search_papers")(handle_search)
+_traced_download = trace_tool("download_paper")(handle_download)
+_traced_list = trace_tool("list_papers")(handle_list_papers)
+_traced_read = trace_tool("read_paper")(handle_read_paper)
+
 
 @server.list_prompts()
 async def list_prompts() -> List[types.Prompt]:
@@ -54,13 +60,13 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
     logger.debug(f"Calling tool {name} with arguments {arguments}")
     try:
         if name == "search_papers":
-            return await handle_search(arguments)
+            return await _traced_search(arguments)
         elif name == "download_paper":
-            return await handle_download(arguments)
+            return await _traced_download(arguments)
         elif name == "list_papers":
-            return await handle_list_papers(arguments)
+            return await _traced_list(arguments)
         elif name == "read_paper":
-            return await handle_read_paper(arguments)
+            return await _traced_read(arguments)
         else:
             return [types.TextContent(type="text", text=f"Error: Unknown tool {name}")]
     except Exception as e:
