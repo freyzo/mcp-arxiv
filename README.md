@@ -334,7 +334,3 @@ Planned improvements (subject to change):
   - Replace the simple global research context with explicit session IDs and persisted state, so “resume session X” becomes a first‑class feature across restarts.
 
 ---
-
-## License
-
-MIT
